@@ -92,7 +92,6 @@ public class Character : MonoBehaviour
 
 
     [field: Header("Speed")]
-
     [field: SerializeField]
     public float MovementSpeed { get; protected set; }
 
@@ -102,7 +101,6 @@ public class Character : MonoBehaviour
 
 
     [field: Header("Hp and Energy")]
-
     [field: SerializeField]
     [field: Tooltip("Time for beginning regeneration of robot")]
     public float StabilizationTime { get; protected set; }
@@ -152,7 +150,7 @@ public class Character : MonoBehaviour
     {
         while (!IsFullHp && CurrentHpStabilization == null)
         {
-            Hp += Mathf.RoundToInt(Time.deltaTime / (1f / HpRegenSpeed));
+            Hp += Mathf.CeilToInt(Time.deltaTime / (1f / HpRegenSpeed));
 
             yield return new WaitForSeconds(1f / HpRegenSpeed);
         }
@@ -162,7 +160,7 @@ public class Character : MonoBehaviour
     {
         while (!IsFullEnergy && CurrentEnergyStabilization == null)
         {
-            Energy += Mathf.RoundToInt(Time.deltaTime / (1f / EnergyRegenSpeed));
+            Energy += Mathf.CeilToInt(Time.deltaTime / (1f / EnergyRegenSpeed));
 
             yield return new WaitForSeconds(1f / EnergyRegenSpeed);
         }

@@ -1,10 +1,21 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class InputController : MonoBehaviour
 {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || UNITY_STANDALONE
+
+    public static event Action<KeyCode> KeyPressed;
+
 
     private Robot _robot;
+
+    private Dictionary<KeyCode, Action> _keyCodes = new Dictionary<KeyCode, Action>()
+    {
+        {KeyCode.Space, () => KeyPressed?.Invoke(KeyCode.Space) },
+        {KeyCode.Escape, () => KeyPressed?.Invoke(KeyCode.Escape) }
+    };
 
 
     private void Awake()
@@ -21,14 +32,13 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        CheckKeys();
+        RobotMovement();
+        CheckInput();
     }
 
 
-    private void CheckKeys()
+    private void RobotMovement()
     {
-        if (Input.GetKeyDown(KeyCode.Space)) Robot.ChangeActiveRobot();
-
         float forward = Input.GetAxis("Vertical");
         float horizontal = Input.GetAxis("Horizontal");
 
@@ -38,6 +48,18 @@ public class PlayerController : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.LeftShift)) _robot.IsRunning = true;
             if (Input.GetKeyUp(KeyCode.LeftShift)) _robot.IsRunning = false;
+        }
+    }
+
+    private void CheckInput()
+    {
+        foreach (var keyCode in _keyCodes)
+        {
+            if (Input.GetKeyDown(keyCode.Key))
+            {
+                keyCode.Value?.Invoke();
+                break;
+            }
         }
     }
 

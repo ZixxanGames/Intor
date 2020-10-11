@@ -16,43 +16,6 @@ public class Robot : Character
     public bool IsActive => ActiveRobot == this;
 
 
-    public override int Hp
-    {
-        get => hp;
-        set
-        {
-            base.Hp = value;
-
-            if (this == ActiveRobot)
-            {
-                //statBar.SetActive(statBar.Hp.gameObject, true);
-
-                if (_currentHpHiding != null) StopCoroutine(_currentHpHiding);
-
-                //currentHpHiding = StartCoroutine(HideHp());
-            }
-        }
-    }
-
-    public override int Energy
-    {
-        get => energy;
-        set
-        {
-            base.Energy = value;
-
-            if (this == ActiveRobot)
-            {
-                //statBar.SetActive(statBar.Energy.gameObject, true);
-
-                if (_currentEnergyHiding != null) StopCoroutine(_currentEnergyHiding);
-
-                //currentEnergyHiding = StartCoroutine(HideEnergy());
-            }
-        }
-    }
-
-
     private bool _isRunning;
     public bool IsRunning
     {
@@ -81,9 +44,18 @@ public class Robot : Character
     public float SprintCost { get; private set; }
 
 
+    public FieldOfView FoV { get; private set; }
+
+    public Backpack Backpack { get; private set; }
+
+
+    [SerializeField]
+    private int _startBackpackSize = 3;
+
+
+    private Transform _camPositionsContainer;
+
     private Coroutine _currentSprint;
-    private Coroutine _currentHpHiding;
-    private Coroutine _currentEnergyHiding;
 
 
     private void Awake()
@@ -109,7 +81,14 @@ public class Robot : Character
     {
         base.Start();
 
-        //FoV = transform.GetChild(0).GetComponent<RobotFieldOfView>();
+        FoV = transform.GetChild(0).GetComponent<FieldOfView>();
+
+        Backpack = new Backpack()
+        {
+            TotalSize = _startBackpackSize
+        };
+
+        _camPositionsContainer = ActiveRobot.transform.GetChild(ActiveRobot.transform.childCount - 1);
 
         if (IsActive)
         {
@@ -144,10 +123,7 @@ public class Robot : Character
 
         (ActiveRobot, NonActiveRobot) = (NonActiveRobot, ActiveRobot);
 
-        /*if (NonActiveRobot.currentEnergyHiding != null) NonActiveRobot.StopCoroutine(NonActiveRobot.currentEnergyHiding);
-        if (NonActiveRobot.currentHpHiding != null) NonActiveRobot.StopCoroutine(NonActiveRobot.currentHpHiding);
-
-        GameUI.EnergizerUsed -= NonActiveRobot.UseEnergizer;
+        /* GameUI.EnergizerUsed -= NonActiveRobot.UseEnergizer;
         GameUI.FirstAidKitUsed -= NonActiveRobot.UseFirstAidKit;
         GameUI.EnemyAttacked -= NonActiveRobot.Attack;
         GameUI.Ran -= NonActiveRobot.OnRun;
@@ -155,7 +131,13 @@ public class Robot : Character
         GameUI.EnergizerUsed += ActiveRobot.UseEnergizer;
         GameUI.FirstAidKitUsed += ActiveRobot.UseFirstAidKit;
         GameUI.EnemyAttacked += ActiveRobot.Attack;
-        GameUI.Ran += ActiveRobot.OnRun;*/
+        GameUI.Ran += ActiveRobot.OnRun; */
+
+        NonActiveRobot.IsRunning = false;
+
+        ActiveRobot._camPositionsContainer.SetParent(ActiveRobot.transform);
+        ActiveRobot._camPositionsContainer.localPosition = Vector3.zero;
+        ActiveRobot._camPositionsContainer.localRotation = Quaternion.identity;
 
         ActiveRobot.Hp = ActiveRobot.Hp;
         ActiveRobot.Energy = ActiveRobot.Energy;
@@ -181,6 +163,7 @@ public class Robot : Character
         transform.Translate(Vector3.forward * direction.magnitude * MovementSpeed * Time.deltaTime);
     }
 
+
     private IEnumerator Sprint()
     {
         if (Energy <= 0)
@@ -192,7 +175,6 @@ public class Robot : Character
             yield break;
         }
 
-        float t = 0;
         float step = 0;
         float Acceleration = 5;
         float speedNormal = MovementSpeed;
@@ -200,13 +182,14 @@ public class Robot : Character
         float speedAccelerated = MovementSpeed * SprintKoefficient;
         while (MovementSpeed < speedAccelerated && IsRunning)
         {
-            MovementSpeed = Mathf.Lerp(speedNormal, speedAccelerated, t);
+            MovementSpeed = Mathf.Lerp(speedNormal, speedAccelerated, step);
 
-            t += Acceleration * Time.fixedDeltaTime;
+            step += Acceleration * Time.fixedDeltaTime;
 
             yield return null;
         }
 
+        step = 0;
         while (IsRunning && Energy > 0)
         {
             step += Time.deltaTime;
@@ -221,13 +204,13 @@ public class Robot : Character
             yield return null;
         }
 
-        t = 0;
+        step = 0;
         float speedCurrent = MovementSpeed;
         while (MovementSpeed > speedNormal)
         {
-            MovementSpeed = Mathf.Lerp(speedCurrent, speedNormal, t);
+            MovementSpeed = Mathf.Lerp(speedCurrent, speedNormal, step);
 
-            t += Acceleration * Time.deltaTime;
+            step += Acceleration * Time.deltaTime;
 
             yield return null;
         }
@@ -259,6 +242,6 @@ public class Robot : Character
 
     private void OnDie(Character _)
     {
-
+        throw new NotImplementedException();
     }
 }
