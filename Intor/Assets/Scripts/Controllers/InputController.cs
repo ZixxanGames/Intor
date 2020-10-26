@@ -1,28 +1,31 @@
-﻿using System;
+﻿#if UNITY_EDITOR || UNITY_STANDALONE
+#define KEYBOARD
+#endif
+
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class InputController : MonoBehaviour
 {
-#if UNITY_EDITOR || UNITY_STANDALONE
+#if KEYBOARD
 
-    public static event Action<KeyCode> KeyPressed;
+    private static Dictionary<KeyCode, Action> _keyCodes;
 
 
     private Robot _robot;
-
-    private Dictionary<KeyCode, Action> _keyCodes = new Dictionary<KeyCode, Action>()
-    {
-        {KeyCode.Space, () => KeyPressed?.Invoke(KeyCode.Space) },
-        {KeyCode.Escape, () => KeyPressed?.Invoke(KeyCode.Escape) }
-    };
 
 
     private void Awake()
     {
         Robot.ActiveRobotChanged += OnActiveRobotChanged;
 
-        _robot = GetComponent<Robot>();
+        _keyCodes = new Dictionary<KeyCode, Action>();
+    }
+
+    private void Start()
+    {
+        _robot = Robot.ActiveRobot;
     }
 
     private void OnDestroy()
@@ -34,6 +37,31 @@ public class InputController : MonoBehaviour
     {
         RobotMovement();
         CheckInput();
+    }
+
+
+    public static void AddKeyAction(KeyCode code, Action action)
+    {
+        if (_keyCodes.ContainsKey(code)) return;
+
+        _keyCodes.Add(code, action);
+    }
+
+    public static void ChangeKeyAction(KeyCode code, Action newAction)
+    {
+        if (!_keyCodes.ContainsKey(code)) return;
+
+        _keyCodes[code] = newAction;
+    }
+
+    public static void ChangeKey(KeyCode oldCode, KeyCode newCode)
+    {
+        if (!_keyCodes.ContainsKey(oldCode)) return;
+
+        if (_keyCodes.ContainsKey(newCode)) _keyCodes.Remove(newCode);
+
+        _keyCodes.Add(newCode, _keyCodes[oldCode]);
+        _keyCodes.Remove(oldCode);
     }
 
 
@@ -49,15 +77,16 @@ public class InputController : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.LeftShift)) _robot.IsRunning = true;
             if (Input.GetKeyUp(KeyCode.LeftShift)) _robot.IsRunning = false;
         }
+        else _robot.IsRunning = false;
     }
 
     private void CheckInput()
     {
-        foreach (var keyCode in _keyCodes)
+        foreach (var keyAction in _keyCodes)
         {
-            if (Input.GetKeyDown(keyCode.Key))
+            if (Input.GetKeyDown(keyAction.Key))
             {
-                keyCode.Value?.Invoke();
+                keyAction.Value?.Invoke();
                 break;
             }
         }
@@ -65,7 +94,7 @@ public class InputController : MonoBehaviour
 
     private void OnActiveRobotChanged(Robot robot)
     {
-        enabled = _robot.IsActive;
+        _robot = robot;
     }
 
 #endif

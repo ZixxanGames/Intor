@@ -1,30 +1,51 @@
-﻿using UnityEngine;
-
-public class GameUI : MonoBehaviour
-{
-#if UNITY_EDITOR || UNITY_STANDALONE
-
-    private void Awake()
-    {
-        InputController.KeyPressed += OnKeyPressed;
-    }
-
-    private void OnDestroy()
-    {
-        InputController.KeyPressed -= OnKeyPressed;
-    }
-
-    public void OnKeyPressed(KeyCode code)
-    {
-        switch (code)
-        {
-            case KeyCode.Space: 
-                if (!PauseUI.IsPause) ChangeActiveRobot();
-                break;
-        }
-    }
-
+﻿#if UNITY_EDITOR || UNITY_STANDALONE
+#define KEYBOARD
 #endif
 
-    public void ChangeActiveRobot() => Robot.ChangeActiveRobot();
+using UnityEngine;
+
+namespace Scripts.UI
+{
+    public class GameUI : PanelUI
+    {
+        private void Awake()
+        {
+            CameraController.CameraFocused += OnCameraFocused;
+            PauseUI.Paused += OnShown;
+            InventoryUI.Showed += OnShown;
+
+#if KEYBOARD
+            InputController.AddKeyAction(KeyCode.Space, ChangeActiveRobot);
+            InputController.AddKeyAction(KeyCode.Mouse0, Attack);
+#endif
+        }
+
+        private void OnDestroy()
+        {
+            CameraController.CameraFocused -= OnCameraFocused;
+            PauseUI.Paused -= OnShown;
+            InventoryUI.Showed -= OnShown;
+        }
+
+
+        public void ChangeActiveRobot()
+        {
+            if (!PauseUI.IsPause) Robot.ChangeActiveRobot();
+        }
+
+        public void Attack()
+        {
+
+        }
+
+        public void Sprint()
+        {
+            Robot.ActiveRobot.IsRunning = !Robot.ActiveRobot.IsRunning;
+        }
+
+
+        private void OnCameraFocused() => Show();
+
+        private void OnShown() => Hide();
+    }
 }

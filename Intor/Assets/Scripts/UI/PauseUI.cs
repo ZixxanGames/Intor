@@ -1,70 +1,100 @@
-﻿using System;
-using UnityEngine;
-
-public class PauseUI : MonoBehaviour
-{
-    public static event Action Paused;
-    public static event Action Continued;
-
-
-    public static bool IsPause { get; private set; }
-
-
-    [SerializeField]
-    private GameObject _canvasGame = null;
-
-#if UNITY_EDITOR || UNITY_STANDALONE
-
-    private void Awake()
-    {
-        InputController.KeyPressed += OnKeyPressed;
-    }
-
-    private void OnDestroy()
-    {
-        InputController.KeyPressed -= OnKeyPressed;
-    }
-
-
-    private void OnKeyPressed(KeyCode keyCode)
-    {
-        switch (keyCode)
-        {
-            case KeyCode.Escape:
-                if (gameObject.activeSelf) Continue();
-                else Pause();
-                break;
-        }
-    }
-
+﻿#if UNITY_EDITOR || UNITY_STANDALONE
+#define KEYBOARD
 #endif
 
-    private void Start()
+using System;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Scripts.UI
+{
+    public class PauseUI : PanelUI
     {
-        gameObject.SetActive(false);
-    }
+        public static event Action Paused;
+        public static event Action Continued;
+        public static event Action Hided;
 
-    public void Pause()
-    {
-        _canvasGame.SetActive(false);
-        gameObject.SetActive(true);
 
-        Paused?.Invoke();
+        public static bool IsPause { get; private set; }
 
-        Time.timeScale = 0;
 
-        IsPause = true;
-    }
+        [SerializeField]
+        private GameObject _canvasGame = null;
 
-    public void Continue()
-    {
-        _canvasGame.SetActive(true);
-        gameObject.SetActive(false);
+        [SerializeField]
+        private Button _pauseContinue = null;
 
-        Continued?.Invoke();
 
-        Time.timeScale = 1;
+        private void Start()
+        {
+            _pauseContinue.onClick.RemoveAllListeners();
+            _pauseContinue.onClick.AddListener(() => Show());
 
-        IsPause = false;
+            gameObject.SetActive(false);
+
+#if KEYBOARD
+            InputController.AddKeyAction(KeyCode.Escape, Show);
+#endif
+        }
+
+
+        public override void Show()
+        {
+#if KEYBOARD
+            InputController.ChangeKeyAction(KeyCode.Escape, Hide);
+#endif
+            gameObject.SetActive(true);
+
+            _pauseContinue.transform.SetParent(transform.GetChild(1).transform);
+            _pauseContinue.transform.SetSiblingIndex(2);
+            _pauseContinue.onClick.RemoveAllListeners();
+            _pauseContinue.onClick.AddListener(() => Hide());
+
+            Paused?.Invoke();
+
+            Time.timeScale = 0;
+
+            IsPause = true;
+
+            CameraController.CameraFocused += OnCameraFocused;
+        }
+
+        public override void Hide()
+        {
+#if KEYBOARD
+            InputController.ChangeKeyAction(KeyCode.Escape, Show);
+#endif
+            Continued?.Invoke();
+
+            IsPause = false;
+
+            _pauseContinue.onClick.RemoveAllListeners();
+            _pauseContinue.onClick.AddListener(() => Show());
+        }
+
+        public void Restart()
+        {
+            print("Restart");
+        }
+
+        public void QuitToMainMenu()
+        {
+            print("Quit");
+        }
+
+
+        private void OnCameraFocused()
+        {
+            _pauseContinue.transform.SetParent(_canvasGame.transform);
+            _pauseContinue.transform.SetSiblingIndex(1);
+
+            gameObject.SetActive(false);
+
+            Hided?.Invoke();
+
+            Time.timeScale = 1;
+
+            CameraController.CameraFocused -= OnCameraFocused;
+        }
     }
 }

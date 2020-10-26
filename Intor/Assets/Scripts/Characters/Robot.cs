@@ -163,7 +163,6 @@ public class Robot : Character
         transform.Translate(Vector3.forward * direction.magnitude * MovementSpeed * Time.deltaTime);
     }
 
-
     private IEnumerator Sprint()
     {
         if (Energy <= 0)
@@ -175,8 +174,8 @@ public class Robot : Character
             yield break;
         }
 
+        const float Acceleration = 5;
         float step = 0;
-        float Acceleration = 5;
         float speedNormal = MovementSpeed;
 
         float speedAccelerated = MovementSpeed * SprintKoefficient;
@@ -220,10 +219,6 @@ public class Robot : Character
         _currentSprint = null;
     }
 
-
-    private void OnRun() => IsRunning = true;
-
-    private void OnInventoryOpen() => (Hp, Energy) = (Hp, Energy);
 
     private async void OnExhausted(Character character)
     {

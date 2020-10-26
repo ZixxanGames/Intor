@@ -2,14 +2,17 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ItemObjectUI : MonoBehaviour
+namespace Scripts.UI
 {
-    [field: SerializeField]
-    public Button PickUp { get; set; }
+    public class ItemObjectUI : MonoBehaviour
+    {
+        [field: SerializeField]
+        public Button PickUp { get; set; }
 
-    [field: SerializeField]
-    public TextMeshProUGUI Name { get; set; }
+        [field: SerializeField]
+        public TextMeshProUGUI Name { get; set; }
 
-    [field: SerializeField]
-    public TextMeshProUGUI Amount { get; set; }
+        [field: SerializeField]
+        public TextMeshProUGUI Amount { get; set; }
+    }
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [System.Serializable]
-public struct CameraPosition
+public class CameraPosition
 {
     public Vector3 Position => camPosition.position;
 
@@ -11,7 +11,7 @@ public struct CameraPosition
     public CameraPositionType Type { get; private set; }
 
     [SerializeField]
-    private Transform camPosition;
+    private Transform camPosition = null;
 }
 
 public enum CameraPositionType
