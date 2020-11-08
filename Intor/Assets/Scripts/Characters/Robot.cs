@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Scripts.UI;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -53,7 +54,7 @@ public class Robot : Character
     private int _startBackpackSize = 3;
 
 
-    private Transform _camPositionsContainer;
+    private Transform _sharedContainer;
 
     private Coroutine _currentSprint;
 
@@ -64,13 +65,11 @@ public class Robot : Character
         {
             ActiveRobot = this;
 
-            //robotUI = GetComponentInChildren<RobotUI>();
+            PanelUI.Showed += OnShown;
         }
         else
         {
             NonActiveRobot = this;
-
-            //Destroy(transform.GetComponentInChildren<RobotUI>().gameObject);
         }
 
         Died += OnDie;
@@ -88,32 +87,20 @@ public class Robot : Character
             TotalSize = _startBackpackSize
         };
 
-        _camPositionsContainer = ActiveRobot.transform.GetChild(ActiveRobot.transform.childCount - 1);
+        _sharedContainer = ActiveRobot.transform.GetChild(ActiveRobot.transform.childCount - 1);
 
         if (IsActive)
         {
-            /*GameUI.EnergizerUsed += UseEnergizer;
-            GameUI.FirstAidKitUsed += UseFirstAidKit;
-            GameUI.EnemyAttacked += Attack;
-            GameUI.Ran += OnRun;*/
-
             ActiveRobotChanged?.Invoke(this);
         }
     }
 
     private void OnDestroy()
     {
+        PanelUI.Showed -= OnShown;
+
         Died -= OnDie;
         Exhausted -= OnExhausted;
-
-        /*RobotUI.InventoryOpened -= OnInventoryOpen;
-
-        GameUI.EnergizerUsed -= UseEnergizer;
-        GameUI.FirstAidKitUsed -= UseFirstAidKit;
-        GameUI.EnemyAttacked -= Attack;
-        GameUI.Ran -= OnRun;
-
-        SaveData();*/
     }
 
 
@@ -121,35 +108,37 @@ public class Robot : Character
     {
         BeforeActiveRobotChanged?.Invoke(ActiveRobot);
 
+        PanelUI.Showed -= ActiveRobot.OnShown;
+
+        ActiveRobot.IsRunning = false;
+
+
         (ActiveRobot, NonActiveRobot) = (NonActiveRobot, ActiveRobot);
 
-        /* GameUI.EnergizerUsed -= NonActiveRobot.UseEnergizer;
-        GameUI.FirstAidKitUsed -= NonActiveRobot.UseFirstAidKit;
-        GameUI.EnemyAttacked -= NonActiveRobot.Attack;
-        GameUI.Ran -= NonActiveRobot.OnRun;
 
-        GameUI.EnergizerUsed += ActiveRobot.UseEnergizer;
-        GameUI.FirstAidKitUsed += ActiveRobot.UseFirstAidKit;
-        GameUI.EnemyAttacked += ActiveRobot.Attack;
-        GameUI.Ran += ActiveRobot.OnRun; */
+        PanelUI.Showed += ActiveRobot.OnShown;
 
-        NonActiveRobot.IsRunning = false;
-
-        ActiveRobot._camPositionsContainer.SetParent(ActiveRobot.transform);
-        ActiveRobot._camPositionsContainer.localPosition = Vector3.zero;
-        ActiveRobot._camPositionsContainer.localRotation = Quaternion.identity;
+        ActiveRobot._sharedContainer.SetParent(ActiveRobot.transform);
+        ActiveRobot._sharedContainer.localPosition = Vector3.zero;
+        ActiveRobot._sharedContainer.localRotation = Quaternion.identity;
 
         ActiveRobot.Hp = ActiveRobot.Hp;
         ActiveRobot.Energy = ActiveRobot.Energy;
-
-        //robotUI.transform.SetParent(ActiveRobot.transform);
-        //robotUI.transform.localPosition = Vector3.zero;
 
         ActiveRobotChanged?.Invoke(ActiveRobot);
     }
 
 
-    public void Move(Vector2 direction) =>  Move(new Vector3(direction.x, 0f, direction.y));
+    public void UseItem(Item item)
+    {
+        switch (item.ItemType)
+        {
+            case ItemType.Energizer: Energy += 15; break;
+            case ItemType.FirstAidKit: Hp += 5; break;
+        }
+    }
+
+    public void Move(Vector2 direction) => Move(new Vector3(direction.x, 0f, direction.y));
     public void Move(Vector3 direction)
     {
         direction = Vector3.ClampMagnitude(direction, 1);
@@ -162,6 +151,7 @@ public class Robot : Character
 
         transform.Translate(Vector3.forward * direction.magnitude * MovementSpeed * Time.deltaTime);
     }
+
 
     private IEnumerator Sprint()
     {
@@ -219,6 +209,11 @@ public class Robot : Character
         _currentSprint = null;
     }
 
+
+    private void OnShown(PanelUI panel)
+    {
+        ShowStats();
+    }
 
     private async void OnExhausted(Character character)
     {

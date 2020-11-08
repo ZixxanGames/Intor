@@ -5,7 +5,7 @@ using Scripts.UI;
 
 public class ItemObject : MonoBehaviour, IActiveObject
 {
-    private static List<ItemObject> _Objects;
+    private static List<ItemObject> _objects;
 
     [field: SerializeField]
     public Item Item { get; set; }
@@ -14,27 +14,25 @@ public class ItemObject : MonoBehaviour, IActiveObject
     private ItemObjectUI _itemUI = null;
 
 
-    protected virtual void Awake() => LoadData();
-
     protected virtual void Start()
     {
-        if (_Objects == null) _Objects = new List<ItemObject>();
+        if (_objects == null) _objects = new List<ItemObject>();
 
         if (Item.Stackable && Item.Amount == 0) Item.Amount = 1;
 
-        Item.ItemObject = gameObject;
+        Item.GameObject = gameObject;
 
         _itemUI.gameObject.SetActive(false);
 
         SetItem(Item);
 
-        _Objects.Add(this);
+        _objects.Add(this);
     }
 
-    private void OnDestroy() => _Objects.Remove(this);
+    private void OnDestroy() => _objects.Remove(this);
 
 
-    public static GameObject GetObject(Item item) => _Objects.FirstOrDefault((obj) => !obj.gameObject.activeSelf && obj.Item.GetType() == item.GetType()).gameObject;
+    public static GameObject GetObject(Item item) => _objects.FirstOrDefault((obj) => !obj.gameObject.activeSelf && obj.Item.GetType() == item.GetType())?.gameObject;
 
 
     public void SetItem(Item item)
@@ -44,6 +42,7 @@ public class ItemObject : MonoBehaviour, IActiveObject
         _itemUI.Name.text = Item.Name;
         _itemUI.Amount.text = Item.Stackable ? Item.Amount.ToString() : "";
     }
+
 
     public void EnterInteraction(Robot robot)
     {
@@ -70,20 +69,5 @@ public class ItemObject : MonoBehaviour, IActiveObject
         _itemUI.PickUp.onClick.RemoveAllListeners();
 
         _itemUI.gameObject.SetActive(false);
-    }
-
-
-    protected virtual void LoadData()
-    {
-        //if (DataList.GetObject(Id) == null) return;
-
-        /*var savedObj = DataList.GetObject(Id) as ItemObjectData;
-
-        Item = savedObj.Item;
-
-        transform.position = savedObj.Position;
-        gameObject.SetActive(savedObj.Active);
-
-        if (!gameObject.activeSelf) Start();*/
     }
 }

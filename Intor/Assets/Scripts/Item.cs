@@ -2,35 +2,33 @@
 using UnityEngine;
 
 [Serializable]
-[CreateAssetMenu(fileName = "New Item", menuName = "Items/Item", order = 1)]
-public class Item : ScriptableObject
+public class Item
 {
-    private int amount;
+    [SerializeField]
+    private int _amount;
     public int Amount
     {
-        get => amount;
+        get => _amount;
         set
         {
             if (!Stackable) throw new ArgumentException("Attempt to change amount of non-stackable item", nameof(Amount));
 
-            amount = value;
+            _amount = value;
         }
     }
 
-    [field: SerializeField]
-    public bool Stackable { get; set; }
+    public bool Stackable => _itemData.Stackable;
 
-    [field: SerializeField]
-    public string Name { get; set; }
+    public string Name => _itemData.Name;
 
-    [field: SerializeField]
-    public string Description { get; set; }
+    public string Description => _itemData.Description;
 
-    [field: SerializeField]
-    public ItemType ItemType { get; set; }
+    public ItemType ItemType => _itemData.ItemType;
 
-    [field: NonSerialized]
-    public GameObject ItemObject { get; set; }
+    public GameObject GameObject { get; set; }
+
+    [SerializeField]
+    private ItemData _itemData = null;
 
 
     public static implicit operator bool(Item item) => item != null;
@@ -39,19 +37,12 @@ public class Item : ScriptableObject
     public override string ToString() => Name;
 
 
-    public virtual Item Clone()
+    public virtual Item Clone() => new Item()
     {
-        Item item = CreateInstance<Item>();
-
-        item.Name = Name;
-        item.Description = Description;
-        item.ItemType = ItemType;
-        item.amount = Amount;
-        item.Stackable = Stackable;
-        item.ItemObject = ItemObject;
-
-        return item;
-    }
+        GameObject = GameObject,
+        _amount = _amount,
+        _itemData = _itemData
+    };
 }
 
 [Flags]

@@ -92,10 +92,7 @@ public class InputController : MonoBehaviour
         }
     }
 
-    private void OnActiveRobotChanged(Robot robot)
-    {
-        _robot = robot;
-    }
+    private void OnActiveRobotChanged(Robot robot) => _robot = robot;
 
 #endif
 }

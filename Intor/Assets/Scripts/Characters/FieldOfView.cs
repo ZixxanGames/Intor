@@ -40,16 +40,16 @@ public class FieldOfView : MonoBehaviour
     {
         Robot.ActiveRobotChanged += OnActiveRobotChanged;
 
-        //robot.Backpack.ItemAdded += OnItemsChanged;
-        //robot.Backpack.ItemRemoved += OnItemsChanged;
+        _robot.Backpack.ItemAdded += OnItemsChanged;
+        _robot.Backpack.ItemRemoved += OnItemsChanged;
     }
 
     private void Off()
     {
         Robot.ActiveRobotChanged -= OnActiveRobotChanged;
 
-        //robot.Backpack.ItemAdded -= OnItemsChanged;
-        //robot.Backpack.ItemRemoved -= OnItemsChanged;
+        _robot.Backpack.ItemAdded -= OnItemsChanged;
+        _robot.Backpack.ItemRemoved -= OnItemsChanged;
     }
 
     private void ColldierEnter(Collider col)
@@ -84,8 +84,8 @@ public class FieldOfView : MonoBehaviour
         foreach (var col in colliders) robot.FoV.ColldierEnter(col);
     }
 
-    /*private void OnItemsChanged(Item item)
+    private void OnItemsChanged(Item item)
     {
         foreach (var col in Overlaps) ColldierEnter(col);
-    }*/
+    }
 }

@@ -31,7 +31,7 @@ public class CameraController : MonoBehaviour
     private Quaternion _rotationBeforeMove;
 
     [SerializeField]
-    private CameraPosition[] _temp = null;
+    private Transform _camPositionsContainer = null;
 
 
 
@@ -39,27 +39,30 @@ public class CameraController : MonoBehaviour
     {
         Robot.ActiveRobotChanged += OnActiveRobotChanged;
 
-        PauseUI.Paused += OnPause;
-        PauseUI.Continued += OnContinue;
+        PanelUI.Showed += OnShown;
+        PanelUI.BeganHiding += OnBeginHided;
 
         _camPositions = new Dictionary<CameraPositionType, CameraPosition>();
-        foreach (var pos in _temp) _camPositions.Add(pos.Type, pos);
-        _temp = null;
+        foreach (var pos in _camPositionsContainer.GetChilds<CameraPosition>()) _camPositions.Add(pos.Type, pos);
+        _camPositionsContainer = null;
 
         _isOnStartPosition = true;
     }
 
     private void LateUpdate()
     {
-        if (!IsTransition)
-        {
-            transform.position = Vector3.Lerp(transform.position, _target.position - _offset, _followSpeed * Time.deltaTime);
-        }
+        if (!IsTransition) transform.position = Vector3.Lerp(transform.position, _target.position - _offset, _followSpeed * Time.deltaTime);
 
         plane.position = transform.position;
     }
 
-    private void OnDestroy() =>  Robot.ActiveRobotChanged -= OnActiveRobotChanged;
+    private void OnDestroy()
+    {
+        Robot.ActiveRobotChanged -= OnActiveRobotChanged;
+
+        PanelUI.Showed -= OnShown;
+        PanelUI.BeganHiding -= OnBeginHided;
+    }
 
 
     private void MoveTo(CameraPosition camPosition) => MoveTo(camPosition.Position, camPosition.Rotation);
@@ -85,17 +88,7 @@ public class CameraController : MonoBehaviour
     }
 
 
-    private void OnShow()
-    {
-
-    }
-
-    private void OnHide()
-    {
-
-    }
-
-    private void OnPause()
+    private void OnShown(PanelUI panel)
     {
         if (_isOnStartPosition)
         {
@@ -105,12 +98,12 @@ public class CameraController : MonoBehaviour
             _isOnStartPosition = false;
         }
 
-        MoveTo(_camPositions[CameraPositionType.Pause]);
+        if (panel.PositionType != CameraPositionType.None) MoveTo(_camPositions[panel.PositionType]);
     }
 
-    private void OnContinue()
+    private void OnBeginHided(PanelUI panel)
     {
-        MoveTo(_target.position - _offset, _rotationBeforeMove);
+        if(panel.PositionType != CameraPositionType.None) MoveTo(_target.position - _offset, _rotationBeforeMove);
     }
 
     private void OnActiveRobotChanged(Robot robot)

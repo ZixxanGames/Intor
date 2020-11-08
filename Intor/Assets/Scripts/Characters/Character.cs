@@ -146,6 +146,9 @@ public class Character : MonoBehaviour
     }
 
 
+    public void ShowStats() => (Hp, Energy) = (Hp, Energy);
+
+
     protected virtual IEnumerator RegenerateHp()
     {
         while (!IsFullHp && CurrentHpStabilization == null)

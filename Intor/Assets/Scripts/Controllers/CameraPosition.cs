@@ -1,17 +1,13 @@
 ﻿using UnityEngine;
 
-[System.Serializable]
-public class CameraPosition
+public class CameraPosition : MonoBehaviour
 {
-    public Vector3 Position => camPosition.position;
+    public Vector3 Position => transform.position;
 
-    public Quaternion Rotation => camPosition.rotation;
+    public Quaternion Rotation => transform.rotation;
 
     [field: SerializeField]
     public CameraPositionType Type { get; private set; }
-
-    [SerializeField]
-    private Transform camPosition = null;
 }
 
 public enum CameraPositionType

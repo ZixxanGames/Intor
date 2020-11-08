@@ -15,9 +15,6 @@ namespace Scripts.UI
         [SerializeField]
         private RectTransform _stick = null;
 
-        [SerializeField]
-        private Vector2 _referenceResolution = new Vector2(1920, 1080);
-
         private Vector2 _startPos;
         private Vector2 _direction;
         private Vector2 _resolutionKoefficient;
@@ -36,7 +33,7 @@ namespace Scripts.UI
 
             _startPos = (Vector2)transform.localPosition - transform.parent.GetComponent<RectTransform>().rect.min;
 
-            _resolutionKoefficient = _referenceResolution / new Vector2(Screen.width, Screen.height);
+            _resolutionKoefficient = StartSetup.ReferenceResolution / new Vector2(Screen.width, Screen.height);
 
             float minKoef = Mathf.Min(_resolutionKoefficient.x, _resolutionKoefficient.y);
 

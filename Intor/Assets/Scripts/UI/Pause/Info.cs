@@ -19,6 +19,8 @@ namespace Scripts.UI.Pause
         {
             ShownPosition = transform.position;
             HiddenPosition = new Vector2(transform.position.x + transform.parent.GetComponent<RectTransform>().rect.width, transform.position.y);
+
+            transform.position = HiddenPosition;
         }
 
         private void OnDestroy()

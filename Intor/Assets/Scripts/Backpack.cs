@@ -7,6 +7,7 @@ public class Backpack : IEnumerable<Item>
 {
     public event Action<Item> ItemAdded;
     public event Action<Item> ItemRemoved;
+    public event Action<Item> ItemChanged;
     public event Action<Item> ItemAmountChanged;
 
 
@@ -38,11 +39,26 @@ public class Backpack : IEnumerable<Item>
     //public bool HasModule(ModuleType moduleType) => Items.Any((item) => (item is Module module) && module.ModuleType == moduleType);
 
 
-    public void Swap(int index1, int index2) => (_items[index1], _items[index2]) = (_items[index2], _items[index1]);
+    public void Swap(int index1, int index2)
+    {
+        (_items[index1], _items[index2]) = (_items[index2], _items[index1]);
+
+        ItemChanged?.Invoke(_items[index1]);
+        ItemChanged?.Invoke(_items[index2]);
+    }
+    public void Swap(Item item1, Item item2) => Swap(_items.IndexOf(item1), _items.IndexOf(item2));
+
+    public void ChangeItem(Item oldItem, Item newItem)
+    {
+        _items[_items.IndexOf(oldItem)] = newItem;
+
+        ItemChanged?.Invoke(newItem);
+    }
+
 
     public void Add(Item item)
     {
-        if (!HasEmptySpace && !item.Stackable) return;
+        if (!item || (!HasEmptySpace && !item.Stackable)) return;
 
         var equalItem = this[item.ItemType];
 
@@ -87,9 +103,8 @@ public class Backpack : IEnumerable<Item>
 
         equalItem.Amount--;
 
-        ItemAmountChanged.Invoke(item);
-
-        if (equalItem.Amount <= 0) Remove(equalItem);
+        if (equalItem.Amount > 0) ItemAmountChanged.Invoke(item);
+        else Remove(item);
     }
 
 

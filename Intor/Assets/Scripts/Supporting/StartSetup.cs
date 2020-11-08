@@ -2,8 +2,12 @@
 
 public class StartSetup : MonoBehaviour
 {
+    public static Vector2 ReferenceResolution { get; } = new Vector2(1920, 1080);
+
+
     [SerializeField]
     private GameObject[] _objectsToActivate = null;
+
 
     private void Awake()
     {

@@ -11,8 +11,7 @@ namespace Scripts.UI
         private void Awake()
         {
             CameraController.CameraFocused += OnCameraFocused;
-            PauseUI.Paused += OnShown;
-            InventoryUI.Showed += OnShown;
+            Showed += OnShown;
 
 #if KEYBOARD
             InputController.AddKeyAction(KeyCode.Space, ChangeActiveRobot);
@@ -23,8 +22,7 @@ namespace Scripts.UI
         private void OnDestroy()
         {
             CameraController.CameraFocused -= OnCameraFocused;
-            PauseUI.Paused -= OnShown;
-            InventoryUI.Showed -= OnShown;
+            Showed -= OnShown;
         }
 
 
@@ -46,6 +44,9 @@ namespace Scripts.UI
 
         private void OnCameraFocused() => Show();
 
-        private void OnShown() => Hide();
+        private void OnShown(PanelUI panel)
+        {
+            if (panel != this) Hide();
+        }
     }
 }
